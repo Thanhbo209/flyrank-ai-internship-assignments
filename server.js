@@ -3,7 +3,7 @@ import swaggerUi from "swagger-ui-express";
 import { readFile } from "node:fs/promises";
 
 const openapiDocument = JSON.parse(
-  await readFile(new URL("./openapi.json", import.meta.url))
+  await readFile(new URL("./openapi.json", import.meta.url)),
 );
 
 const app = express();
@@ -46,7 +46,17 @@ app.get("/health", (req, res) => {
 });
 
 app.get("/tasks", (req, res) => {
-  res.status(200).json(TASKS);
+  const { done } = req.query;
+
+  if (done === undefined) {
+    return res.json(TASKS);
+  }
+
+  const isDone = done === "true";
+
+  const filteredTasks = TASKS.filter((t) => t.done === isDone);
+
+  res.json(filteredTasks);
 });
 
 app.get("/tasks/:id", (req, res) => {
