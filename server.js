@@ -1,7 +1,15 @@
 import express from "express";
+import swaggerUi from "swagger-ui-express";
+import { readFile } from "node:fs/promises";
+
+const openapiDocument = JSON.parse(
+  await readFile(new URL("./openapi.json", import.meta.url))
+);
 
 const app = express();
 app.use(express.json());
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapiDocument));
 
 const PORT = 3000;
 
@@ -102,17 +110,17 @@ app.put("/tasks/:id", (req, res) => {
 app.delete("/tasks/:id", (req, res) => {
   const taskId = Number(req.params.id);
 
-  const task = TASKS.find((task) => task.id === taskId);
+  const index = TASKS.findIndex((task) => task.id === taskId);
 
-  if (!task) {
+  if (index === -1) {
     return res.status(404).json({
       error: `Task ${taskId} not found`,
     });
   }
 
-  const deletedTask = TASKS.delete(task);
+  TASKS.splice(index, 1);
 
-  res.status(204);
+  res.status(204).end();
 });
 
 app.listen(PORT, () => {
