@@ -75,6 +75,46 @@ app.post("/tasks", (req, res) => {
   res.status(201).json(createdTask);
 });
 
+app.put("/tasks/:id", (req, res) => {
+  const taskId = Number(req.params.id);
+  const { title, done } = req.body;
+
+  const task = TASKS.find((t) => t.id === taskId);
+
+  if (!task) {
+    return res.status(404).json({
+      error: `Task ${taskId} not found`,
+    });
+  }
+
+  if (title === undefined && done === undefined) {
+    return res.status(400).json({
+      error: "Please provide a title or done status to update.",
+    });
+  }
+
+  if (title !== undefined) task.title = title;
+  if (done !== undefined) task.done = done;
+
+  res.json(task);
+});
+
+app.delete("/tasks/:id", (req, res) => {
+  const taskId = Number(req.params.id);
+
+  const task = TASKS.find((task) => task.id === taskId);
+
+  if (!task) {
+    return res.status(404).json({
+      error: `Task ${taskId} not found`,
+    });
+  }
+
+  const deletedTask = TASKS.delete(task);
+
+  res.status(204);
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port: ${PORT}`);
 });
