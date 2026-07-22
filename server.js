@@ -46,15 +46,21 @@ app.get("/health", (req, res) => {
 });
 
 app.get("/tasks", (req, res) => {
-  const { done } = req.query;
+  const { done, search } = req.query;
+  let filteredTasks = TASKS;
 
-  if (done === undefined) {
-    return res.json(TASKS);
+  if (done !== undefined) {
+    const isDone = done === "true";
+    filteredTasks = TASKS.filter((t) => t.done === isDone);
   }
 
-  const isDone = done === "true";
+  if (search) {
+    const searchTerm = search.toLowerCase();
 
-  const filteredTasks = TASKS.filter((t) => t.done === isDone);
+    filteredTasks = TASKS.filter((t) =>
+      t.title.toLowerCase().includes(searchTerm),
+    );
+  }
 
   res.json(filteredTasks);
 });
