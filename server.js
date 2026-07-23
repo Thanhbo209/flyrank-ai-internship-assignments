@@ -1,6 +1,45 @@
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 import { readFile } from "node:fs/promises";
+import Database from "better-sqlite3";
+
+const db = new Database("tasks.db");
+db.exec(`
+  CREATE TABLE IF NOT EXISTS tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    done INTEGER NOT NULL DEFAULT 0
+
+  )
+  `);
+
+const rowCount = db.prepare("SELECT COUNT(*) AS count FROM tasks").get().count;
+
+if (rowCount === 0) {
+  // Define seed data
+  const seedTasks = [
+    { title: "Buy groceries", done: 0 },
+    { title: "Read a book", done: 0 },
+    { title: "Build SQLite setup", done: 1 },
+  ];
+
+  const insertTask = db.prepare(
+    "INSERT INTO tasks (title, done) VALUES (?, ?)",
+  );
+
+  const seedDatabase = db.transaction((tasks) => {
+    for (const task of tasks) {
+      insertTask.run(task.title, task.done);
+    }
+  });
+
+  seedDatabase(seedTasks);
+  console.log("Table was empty. Seeded 3 example tasks!");
+} else {
+  console.log(`Table already has ${rowCount} tasks. Skipping seed.`);
+}
+
+db.close();
 
 const openapiDocument = JSON.parse(
   await readFile(new URL("./openapi.json", import.meta.url)),
@@ -77,6 +116,17 @@ app.get("/tasks/:id", (req, res) => {
   }
 
   res.status(200).json(task);
+});
+
+app.get("/stats", (req, res) => {
+  const isDone = TASKS.done === "true";
+  let filteredTasks = TASKS.filter((t) => t.done === isDone);
+
+  res.status(200).json({
+    total: TASKS.length,
+    done: TASKS.length - filteredTasks.length,
+    open: filteredTasks.length,
+  });
 });
 
 app.post("/tasks", (req, res) => {
