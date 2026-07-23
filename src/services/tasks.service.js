@@ -1,4 +1,5 @@
 import TaskRepository from "../repositories/tasks.repository.js";
+
 const taskRepository = new TaskRepository();
 
 class TaskService {
@@ -8,6 +9,14 @@ class TaskService {
 
   getTask = (id) => {
     return taskRepository.findById(id);
+  };
+
+  addTask = (body) => {
+    const { title } = body || {};
+    if (!title || typeof title !== "string" || !title.trim()) {
+      throw new Error("Task title is required");
+    }
+    return taskRepository.createTask({ title });
   };
 }
 

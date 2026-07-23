@@ -12,7 +12,7 @@ router.get("/tasks", (req, res, next) => {
   }
 });
 
-router.get("/tasks/:id", (req, res) => {
+router.get("/tasks/:id", (req, res, next) => {
   try {
     const taskById = taskService.getTask(req.params.id);
     res.json(taskById);
@@ -32,25 +32,14 @@ router.get("/tasks/:id", (req, res) => {
 //   });
 // });
 
-// router.post("/tasks", (req, res) => {
-//   const { title } = req.body;
-
-//   if (!title) {
-//     return res.status(400).json({
-//       error: "Title is missing!",
-//     });
-//   }
-
-//   const createdTask = {
-//     id: TASKS.length + 1,
-//     title: title,
-//     done: false,
-//   };
-
-//   TASKS.push(createdTask);
-
-//   res.status(201).json(createdTask);
-// });
+router.post("/tasks", (req, res, next) => {
+  try {
+    const createdTask = taskService.addTask(req.body);
+    res.status(201).json(createdTask);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 // router.put("/tasks/:id", (req, res) => {
 //   const taskId = Number(req.params.id);

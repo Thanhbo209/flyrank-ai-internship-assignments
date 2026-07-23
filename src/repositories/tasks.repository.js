@@ -23,10 +23,14 @@ export default class TaskRepository {
     }));
   };
 
-  findById(id) {
+  findById = (id) => {
     let query = "SELECT * FROM tasks WHERE id=?";
-    const taskById = db.prepare(query).get(id);
 
-    return taskById;
-  }
+    return db.prepare(query).get(id);
+  };
+
+  createTask = ({ title } = {}) => {
+    const insert = db.prepare("INSERT INTO tasks (title, done) VALUES (?, 0)");
+    return insert.run(title);
+  };
 }
