@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
+import { join } from "node:path";
 
-const db = new Database("tasks.db");
+const db = new Database(join(import.meta.dirname, "tasks.db"));
 
 db.exec(`
    CREATE TABLE IF NOT EXISTS tasks (
@@ -32,3 +33,5 @@ if (rowCount === 0) {
 } else {
   console.log(`Table already has ${rowCount} tasks. Skipping seed.`);
 }
+
+export default db;
