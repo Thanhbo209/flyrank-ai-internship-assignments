@@ -12,7 +12,7 @@ export default class TaskRepository {
 
     if (search) {
       query += " AND LOWER(title) LIKE ?";
-      params.push(`%{search.toLowerCase()}%`);
+      params.push(`%${search.toLowerCase()}%`);
     }
 
     const row = db.prepare(query).all(...params);
@@ -24,13 +24,25 @@ export default class TaskRepository {
   };
 
   findById = (id) => {
-    let query = "SELECT * FROM tasks WHERE id=?";
-
-    return db.prepare(query).get(id);
+    return db.prepare("SELECT * FROM tasks WHERE id=?").get(id);
   };
 
   createTask = ({ title } = {}) => {
     const insert = db.prepare("INSERT INTO tasks (title, done) VALUES (?, 0)");
     return insert.run(title);
+  };
+
+  updateTask = (id, title, done) => {
+    const update = db.prepare(
+      "UPDATE tasks SET title = ?, done = ? WHERE id = ?",
+    );
+    const result = update.run(title, done ? 1 : 0, id);
+    if (result.changes === 0) return null;
+    return { id, title, done: Boolean(done) };
+  };
+
+  deleteTask = (id) => {
+    const deleted = db.prepare("DELETE from tasks WHERE id = ?");
+    return deleted.run(id);
   };
 }

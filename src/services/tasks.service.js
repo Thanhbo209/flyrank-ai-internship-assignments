@@ -7,16 +7,21 @@ class TaskService {
     return taskRepository.findAll({ done, search });
   };
 
-  getTask = (id) => {
+  getTaskById = (id) => {
     return taskRepository.findById(id);
   };
 
-  addTask = (body) => {
-    const { title } = body || {};
-    if (!title || typeof title !== "string" || !title.trim()) {
-      throw new Error("Task title is required");
-    }
+  addTask = (title) => {
     return taskRepository.createTask({ title });
+  };
+
+  editTask = (id, body) => {
+    const { title, done } = body || {};
+    return taskRepository.updateTask(id, title, done);
+  };
+
+  removeTask = (id) => {
+    return taskRepository.deleteTask(id);
   };
 }
 

@@ -8,16 +8,20 @@ router.get("/tasks", (req, res, next) => {
     const tasks = taskService.listTasks(req.query);
     res.status(200).json(tasks);
   } catch (error) {
-    next(error);
+    res.status(400).json({ error: error.message });
   }
 });
 
 router.get("/tasks/:id", (req, res, next) => {
+  const taskId = req.params.id;
+  if (!taskId) {
+    return res.status(404).json({ error: `Task ${taskId} not found` });
+  }
   try {
-    const taskById = taskService.getTask(req.params.id);
-    res.json(taskById);
+    const taskById = taskService.getTaskById(taskId);
+    res.status(200).json(taskById);
   } catch (error) {
-    next(error);
+    res.status(400).json({ error: error.message });
   }
 });
 
@@ -33,52 +37,53 @@ router.get("/tasks/:id", (req, res, next) => {
 // });
 
 router.post("/tasks", (req, res, next) => {
+  const { title } = req.body;
+  if (!title || typeof title !== "string" || !title.trim()) {
+    return res.status(400).json("Title is required");
+  }
   try {
-    const createdTask = taskService.addTask(req.body);
+    const createdTask = taskService.addTask(title);
     res.status(201).json(createdTask);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-// router.put("/tasks/:id", (req, res) => {
-//   const taskId = Number(req.params.id);
-//   const { title, done } = req.body;
+router.put("/tasks/:id", (req, res) => {
+  const taskId = Number(req.params.id);
+  const { title, done } = req.body;
 
-//   const task = TASKS.find((t) => t.id === taskId);
+  if (!Number.isInteger(taskId)) {
+    return res.status(400).json({ error: "Invalid task id" });
+  }
 
-//   if (!task) {
-//     return res.status(404).json({
-//       error: `Task ${taskId} not found`,
-//     });
-//   }
+  if (title === undefined && done === undefined) {
+    return res.status(400).json({ error: "Nothing to update" });
+  }
+  try {
+    const updatedTask = taskService.editTask(taskId, { title, done });
+    if (!updatedTask) {
+      return res.status(404).json({ error: `Task ${taskId} not found` });
+    }
+    res.status(200).json(updatedTask);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
-//   if (title === undefined && done === undefined) {
-//     return res.status(400).json({
-//       error: "Please provide a title or done status to update.",
-//     });
-//   }
+router.delete("/tasks/:id", (req, res) => {
+  const taskId = Number(req.params.id);
 
-//   if (title !== undefined) task.title = title;
-//   if (done !== undefined) task.done = done;
+  if (!taskId) {
+    return res.status(404).json(`Task ${taskId} not found`);
+  }
 
-//   res.json(task);
-// });
-
-// router.delete("/tasks/:id", (req, res) => {
-//   const taskId = Number(req.params.id);
-
-//   const index = TASKS.findIndex((task) => task.id === taskId);
-
-//   if (index === -1) {
-//     return res.status(404).json({
-//       error: `Task ${taskId} not found`,
-//     });
-//   }
-
-//   TASKS.splice(index, 1);
-
-//   res.status(204).end();
-// });
+  try {
+    const deleted = taskService.removeTask(taskId);
+    res.status(204).end();
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 export default router;
