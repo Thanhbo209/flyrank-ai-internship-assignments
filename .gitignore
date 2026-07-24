@@ -22,6 +22,12 @@ coverage/
 *.pid
 *.seed
 
+# SQLite database (auto-created on first run — each clone starts fresh)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
 # OS files
 .DS_Store
 Thumbs.db

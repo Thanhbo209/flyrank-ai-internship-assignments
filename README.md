@@ -1,24 +1,36 @@
 # Task API
 
-A small REST API for managing tasks, built with **Node.js** and **Express**. It exposes a full CRUD cycle over an in-memory list of tasks and ships with interactive Swagger documentation.
+A small REST API for managing tasks, built with **Node.js** and **Express**. It exposes a full CRUD cycle over a **SQLite** database and ships with interactive Swagger documentation.
 
 This is a learning project built in incremental stages (see the commit history: `Stage 0` → `Stage 5`).
-
-> **Note:** Tasks are stored in memory, so the list resets every time the server restarts.
 
 ## Requirements
 
 - [Node.js](https://nodejs.org/) 18 or newer (uses ES modules and top-level `await`)
 
-## Install & Run
+## Quick start
+
+Clone the repo, then run **one command**:
 
 ```bash
-npm install && npm run dev
+npm install && npm start
 ```
 
-The server starts on **http://localhost:3000**. Interactive docs are at **http://localhost:3000/docs**.
+That's it — no database setup required. The server starts on **http://localhost:3000** and interactive docs are at **http://localhost:3000/docs**.
 
-`npm run dev` uses [nodemon](https://www.npmjs.com/package/nodemon) to auto-restart on file changes. For a plain start, use `npm start`.
+On first launch the app creates the SQLite database, its `tasks` table, and seeds **three example tasks** automatically, so a fresh clone is immediately usable.
+
+> During development, `npm run dev` uses [nodemon](https://www.npmjs.com/package/nodemon) to auto-restart on file changes.
+
+## Storage: why SQLite & where it lives
+
+This project uses **SQLite** (via [`better-sqlite3`](https://www.npmjs.com/package/better-sqlite3)) because it's the simplest way to get real, persistent storage:
+
+- **Single file** — the whole database is one file on disk, nothing to install or administer.
+- **Zero setup** — no separate database server or connection strings; the app opens the file directly.
+- **Survives restarts** — unlike an in-memory list, your tasks persist across server restarts.
+
+The database file is **`src/db/tasks.db`**. It is **created automatically** the first time the app runs (see `src/db/db.js`), so it does not need to exist beforehand. It is **git-ignored** on purpose — it's a runtime artifact, not source — so it is never committed and **every clone starts fresh** with the seeded example tasks.
 
 ## Endpoints
 
@@ -69,8 +81,16 @@ Open **http://localhost:3000/docs** to explore every endpoint and run requests s
 
 ```
 .
-├── server.js       # Express app: routes + Swagger wiring
-├── openapi.json    # OpenAPI 3 spec served at /docs
+├── server.js                 # Entry point: boots Express and listens on :3000
+├── openapi.json              # OpenAPI 3 spec served at /docs
+├── src/
+│   ├── app.js                # Wires up routes + Swagger UI
+│   ├── db/
+│   │   ├── db.js             # Opens SQLite, creates the table, seeds on first run
+│   │   └── tasks.db          # SQLite database (auto-created, git-ignored)
+│   ├── routes/               # Express routers (tasks, meta)
+│   ├── services/             # Business logic
+│   └── repositories/         # SQL data access
 ├── package.json
 └── README.md
 ```
