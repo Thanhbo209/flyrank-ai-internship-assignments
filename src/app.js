@@ -9,8 +9,6 @@ const openapiDocument = JSON.parse(
 );
 
 export default function createApp(app) {
-  app.use(express.json());
-
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapiDocument));
   app.use("/", metaRoutes);
   app.use("/", taskRoutes);
